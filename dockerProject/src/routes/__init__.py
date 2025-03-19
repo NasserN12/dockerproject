@@ -79,6 +79,34 @@ def init_routes(app):
             if connection:
                 connection.close()
 
+    @app.route('/student/<string:studentID>', methods=['DELETE'])
+    def delete_student(studentID):
+        connection = None
+        cursor = None
+
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute('SELECT * FROM student WHERE studentID = %s', (studentID,))
+            existing_student = cursor.fetchone()
+
+            if not existing_student:
+                return jsonify({"message": "Student not exists"}), 404
+
+            cursor.execute('DELETE FROM student WHERE studentID = %s', (studentID,))
+            connection.commit()
+
+            return jsonify({"message": "Student Deleted Successfully"}), 200
+
+        except mysql.connector.Error as e:
+            return jsonify({"error": str(e)}), 500
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
 
     
 
